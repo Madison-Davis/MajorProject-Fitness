@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lift">
+<meta name="theme-color" content="#101418">
+<title>Lift</title>
+<style>
+:root{--bg:#101418;--sf:#1a2027;--ln:#2a323b;--tx:#e8ecef;--mu:#8a95a0;--ac:#5cc8ff;--rd:#ff7a7a}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font:16px -apple-system,system-ui,sans-serif;overscroll-behavior:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+body{padding-top:env(safe-area-inset-top)}
+main{max-width:560px;margin:auto;padding:16px 16px calc(88px + env(safe-area-inset-bottom))}
+h2{font-size:20px;margin:0 0 12px}
+h3{font-size:15px;color:var(--mu);font-weight:600;margin:20px 0 8px}
+.tab{display:none}.tab.on{display:block}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:14px;margin-bottom:12px}
+input,select{width:100%;background:var(--bg);color:var(--tx);border:1px solid var(--ln);border-radius:8px;padding:12px;font-size:16px;font-family:inherit}
+.row{display:flex;gap:8px}.row>*{flex:1}
+button{font:inherit;font-weight:600;border:0;border-radius:8px;padding:12px;background:var(--ln);color:var(--tx)}
+button.p{background:var(--ac);color:#06202e}
+button.on{outline:2px solid var(--ac)}
+label.l{display:block;font-size:13px;color:var(--mu);margin:0 0 4px}
+.set{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--ln)}
+.set:first-child{border-top:0}
+.set b{font-weight:600}.set span{color:var(--mu);font-size:14px}
+.x{background:none;color:var(--mu);padding:4px 10px;font-size:20px}
+#clock{font-size:56px;font-weight:700;font-variant-numeric:tabular-nums;text-align:center;margin:4px 0 10px}
+#timer.done #clock{color:var(--rd)}
+.mu{color:var(--mu);font-size:14px}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--sf);border-top:1px solid var(--ln);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;border-radius:0;padding:16px 0;color:var(--mu)}
+nav button.on{color:var(--ac);outline:0}
+svg{width:100%;height:auto;display:block}
+svg text{fill:var(--mu);font-size:10px}
+</style></head><body>
+<main>
+<section class="tab on" id="t-log">
+  <div class="card" id="timer">
+    <div id="clock">0:00</div>
+    <div class="row" id="presets"></div>
+    <div class="row" style="margin-top:8px"><button class="p" id="go">Start</button><button id="stop">Reset</button></div>
+    <label class="mu" style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="checkbox" id="auto" checked style="width:auto"> Start timer when I add a set</label>
+  </div>
+  <div class="card">
+    <label class="l" for="ex">Exercise</label>
+    <input id="ex" list="exl" autocomplete="off" placeholder="Bench press">
+    <datalist id="exl"></datalist>
+    <div class="row" style="margin-top:10px">
+      <div><label class="l" for="w">Weight</label><input id="w" inputmode="decimal" placeholder="135"></div>
+      <div><label class="l" for="r">Reps</label><input id="r" inputmode="numeric" placeholder="8"></div>
+    </div>
+    <button class="p" id="add" style="width:100%;margin-top:12px">Add set</button>
+  </div>
+  <h3>Today</h3><div class="card" id="today"></div>
+</section>
+<section class="tab" id="t-hist"><h2>History</h2><div id="hist"></div>
+  <button id="exp" style="width:100%;margin-top:8px">Export backup (JSON)</button></section>
+<section class="tab" id="t-chart"><h2>Charts</h2>
+  <div class="card"><div style="font-weight:600">Sets per week</div><div class="mu" id="avg"></div><div id="bars"></div></div>
+  <div class="card"><div style="font-weight:600;margin-bottom:8px">Progression</div>
+    <select id="cx"></select><div class="mu" style="margin-top:8px">Best estimated 1-rep max per day</div><div id="line"></div></div>
+</section>
+</main>
+<nav><button data-t="log" class="on">Log</button><button data-t="hist">History</button><button data-t="chart">Charts</button></nav>
+<script>
+const $=s=>document.querySelector(s);
+let D=[];try{D=JSON.parse(localStorage.getItem('lift')||'[]')}catch(e){}
+const save=()=>{try{localStorage.setItem('lift',JSON.stringify(D))}catch(e){}};
+const day=t=>new Date(t).toLocaleDateString('en-CA');
+const wk=t=>{const d=new Date(t);d.setHours(0,0,0,0);d.setDate(d.getDate()-(d.getDay()+6)%7);return d.getTime()};
+const e1=s=>s.r<=1?s.w:s.w*(1+s.r/30);
+const names=()=>[...new Set(D.map(s=>s.ex))].sort();
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function setRow(s){return `<div class="set"><div><b>${esc(s.ex)}</b><br><span>${s.w} × ${s.r}</span></div><button class="x" data-del="${s.id}" aria-label="Delete set">×</button></div>`}
+function render(){
+  $('#exl').innerHTML=names().map(n=>`<option value="${esc(n)}">`).join('');
+  const td=D.filter(s=>day(s.t)===day(Date.now())).reverse();
+  $('#today').innerHTML=td.length?td.map(setRow).join(''):'<span class="mu">No sets yet. Add your first one above.</span>';
+  const g={};D.slice().reverse().forEach(s=>(g[day(s.t)]=g[day(s.t)]||[]).push(s));
+  $('#hist').innerHTML=Object.keys(g).map(k=>`<h3>${new Date(k+'T12:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</h3><div class="card">${g[k].map(setRow).join('')}</div>`).join('')||'<span class="mu">Nothing logged yet.</span>';
+  charts();
+}
+function charts(){
+  const w0=wk(Date.now()),W=[];
+  for(let i=7;i>=0;i--){const d=new Date(w0);d.setDate(d.getDate()-7*i);const k=d.getTime();W.push({k,n:D.filter(s=>wk(s.t)===k).length})}
+  const act=W.filter(x=>x.n>0);
+  $('#avg').textContent=act.length?`Average ${(act.reduce((a,b)=>a+b.n,0)/act.length).toFixed(1)} sets/week over weeks with training (last 8 weeks)`:'No data yet';
+  const mx=Math.max(1,...W.map(x=>x.n));
+  $('#bars').innerHTML=`<svg viewBox="0 0 320 140">${W.map((x,i)=>{const h=x.n/mx*100,X=10+i*38;return `<rect x="${X}" y="${110-h}" width="28" height="${h}" rx="4" fill="#5cc8ff"/><text x="${X+14}" y="${104-h}" text-anchor="middle">${x.n||''}</text><text x="${X+14}" y="128" text-anchor="middle">${new Date(x.k).getMonth()+1}/${new Date(x.k).getDate()}</text>`}).join('')}</svg>`;
+  const sel=$('#cx'),cur=sel.value;sel.innerHTML=names().map(n=>`<option${n===cur?' selected':''}>${esc(n)}</option>`).join('');
+  const ex=sel.value,by={};
+  D.filter(s=>s.ex===ex).forEach(s=>by[day(s.t)]=Math.max(by[day(s.t)]||0,e1(s)));
+  const ks=Object.keys(by).sort();
+  if(ks.length<2){$('#line').innerHTML='<span class="mu">Log this exercise on at least two days to see progression.</span>';return}
+  const v=ks.map(k=>by[k]),lo=Math.min(...v),hi=Math.max(...v),sp=hi-lo||1;
+  const P=v.map((y,i)=>[20+i*(280/(v.length-1)),120-(y-lo)/sp*90]);
+  $('#line').innerHTML=`<svg viewBox="0 0 320 150"><polyline points="${P.map(p=>p.join(',')).join(' ')}" fill="none" stroke="#5cc8ff" stroke-width="2.5"/>${P.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="#5cc8ff"/>`).join('')}<text x="4" y="30">${Math.round(hi)}</text><text x="4" y="124">${Math.round(lo)}</text><text x="20" y="144">${ks[0].slice(5)}</text><text x="300" y="144" text-anchor="end">${ks[ks.length-1].slice(5)}</text></svg>`;
+}
+document.addEventListener('click',e=>{
+  const d=e.target.dataset.del;if(d){D=D.filter(s=>s.id!=d);save();render()}
+  const t=e.target.closest('nav button');if(t){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.id==='t-'+t.dataset.t));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b===t));scrollTo(0,0)}
+});
+$('#cx').onchange=charts;
+$('#ex').onchange=()=>{const l=D.filter(s=>s.ex===$('#ex').value.trim()).pop();if(l){$('#w').value=l.w;$('#r').value=l.r}};
+$('#add').onclick=()=>{
+  const ex=$('#ex').value.trim(),w=parseFloat($('#w').value),r=parseInt($('#r').value);
+  if(!ex||isNaN(w)||isNaN(r)){alert('Enter an exercise, weight, and reps.');return}
+  D.push({id:Date.now(),t:Date.now(),ex,w,r});save();render();
+  if($('#auto').checked)startTimer();
+};
+$('#exp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(D)],{type:'application/json'}));a.download='lift-backup-'+day(Date.now())+'.json';a.click()};
+
+/* timer: based on an end timestamp so it stays correct if the phone sleeps */
+let rest=90,end=0,ac;
+const fmt=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+$('#presets').innerHTML=[60,90,120,180].map(s=>`<button data-p="${s}" class="${s===rest?'on':''}">${fmt(s)}</button>`).join('');
+$('#presets').onclick=e=>{const p=e.target.dataset.p;if(!p)return;rest=+p;document.querySelectorAll('#presets button').forEach(b=>b.classList.toggle('on',b.dataset.p===p));if(!end)$('#clock').textContent=fmt(rest)};
+function startTimer(){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)()}catch(e){}end=Date.now()+rest*1000;$('#timer').classList.remove('done')}
+function beep(){try{const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);g.gain.value=.2;o.frequency.value=880;o.start();o.stop(ac.currentTime+.4)}catch(e){}}
+$('#go').onclick=startTimer;
+$('#stop').onclick=()=>{end=0;$('#timer').classList.remove('done');$('#clock').textContent=fmt(rest)};
+setInterval(()=>{if(!end)return;const s=Math.max(0,Math.ceil((end-Date.now())/1000));$('#clock').textContent=fmt(s);if(!s){end=0;$('#timer').classList.add('done');beep()}},250);
+$('#clock').textContent=fmt(rest);
+
+(()=>{const c=document.createElement('canvas');c.width=c.height=180;const x=c.getContext('2d');x.fillStyle='#101418';x.fillRect(0,0,180,180);x.fillStyle='#5cc8ff';[[30,82,120,16],[38,52,16,76],[126,52,16,76],[22,68,12,44],[146,68,12,44]].forEach(r=>x.fillRect(...r));const l=document.createElement('link');l.rel='apple-touch-icon';l.href=c.toDataURL();document.head.appendChild(l)})();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+render();
+</script></body></html>
