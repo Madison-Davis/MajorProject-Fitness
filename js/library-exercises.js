@@ -1,5 +1,5 @@
 // ============================================================================
-// exercises.js — logic for exercises.html (the reference table)
+// library.js — legacy standalone exercise-library page
 // ============================================================================
 
 const EQUIPMENT_TYPES = [
@@ -80,8 +80,8 @@ function closeForm() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  renderTopbar("Exercises");
-  renderNav("exercises");
+  renderTopbar("Library");
+  renderNav("workouts");
   await ensureSeeded();
   renderList();
   document.getElementById("add-fab").addEventListener("click", openForm);

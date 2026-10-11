@@ -190,18 +190,8 @@ function loadWorkoutsByDay() {
   workoutsByDay = new Map(loadWorkouts().map((w) => [w.day, w]));
 }
 
-function goToToday() {
-  const now = new Date();
-  calState.year = now.getFullYear();
-  calState.month = now.getMonth();
-  calState.selectedDay = todayStr();
-  calState.collapsed = false;
-  renderCalendar();
-  renderDayDetail();
-}
-
 document.addEventListener("DOMContentLoaded", async () => {
-  renderTopbar("Logs", { leftLabel: "Today", onLeftClick: goToToday });
+  renderTopbar("Logs", { noLeftSlot: true });
   renderNav("logs");
   await ensureSeeded();
 
@@ -228,13 +218,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderCalendar();
   });
 
-  // "+" currently routes to starting a live workout (the only logging flow
-  // this app has); wire it to a dedicated past-date log form if you add one.
+  // Start a blank session and open its dedicated page.
   document.getElementById("add-log-fab").addEventListener("click", () => {
-    window.location.href = "index.html";
+    if (!getActiveWorkout()) startBlankWorkout();
+    window.location.href = "active-workouts.html";
   });
 });
 
-function todayStr() {
-  return new Date().toISOString().slice(0, 10);
-}
+

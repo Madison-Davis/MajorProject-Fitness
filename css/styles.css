@@ -339,18 +339,47 @@ nav.tabbar a.active svg { stroke: var(--red); }
 .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
 /* ==========================================================================
-   Templates (Workout page)
+   Workouts page — mode toggle, search + filter row, filter chips
    ========================================================================== */
-.templates-section { margin-top: 28px; }
-
-.templates-header {
+.search-filter-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
+  gap: 8px;
+  margin: 14px 0 6px;
 }
 
-.templates-header h2 { margin: 0; }
+.search-filter-row input {
+  flex: 1;
+  height: 40px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  corner-shape: squircle;
+  padding: 0 12px;
+  font-size: 14px;
+}
+
+.filter-btn {
+  height: 40px;
+  width: auto;
+  padding: 0 14px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.filter-chip-list { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.chip {
+  height: 32px;
+  padding: 0 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  corner-shape: squircle;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.chip.active { background: var(--red-wash); border-color: var(--red); color: var(--red); font-weight: 600; }
 
 /* ==========================================================================
    Bottom sheet — full-screen modal that slides up, used by the template

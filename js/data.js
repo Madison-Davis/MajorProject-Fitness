@@ -15,6 +15,42 @@ const STORAGE_KEYS = {
 
 const SCHEMA_VERSION = 1;
 
+// ---- shared date helpers ----------------------------------------------
+// Used by every page (calendar highlighting, workout timestamps, chart
+// week/month bucketing) — defined once here instead of once per page.
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function nowTime() {
+  return new Date().toTimeString().slice(0, 5); // "HH:MM"
+}
+
+// ---- active workout (the in-progress draft, separate from saved workouts) --
+// Shared here because more than one page starts
+// one: Workout page starts it from a template, Logs page starts it blank
+// via its "+" button. Both write to this shared localStorage slot;
+// active-workouts.html is responsible for displaying the in-progress session.
+const ACTIVE_KEY = "fitness_active_workout";
+
+function getActiveWorkout() {
+  const raw = localStorage.getItem(ACTIVE_KEY);
+  return raw ? JSON.parse(raw) : null;
+}
+
+function setActiveWorkout(w) {
+  localStorage.setItem(ACTIVE_KEY, JSON.stringify(w));
+}
+
+function clearActiveWorkout() {
+  localStorage.removeItem(ACTIVE_KEY);
+}
+
+/** Starts a blank active workout (no template) — used by Logs' "+". */
+function startBlankWorkout() {
+  setActiveWorkout({ day: todayStr(), startTime: nowTime(), endTime: null, stations: [] });
+}
+
 // ---- migrations -----------------------------------------------------------
 // Add an entry here whenever SCHEMA_VERSION bumps. Each fn takes the old
 // shape and returns the next version up; loadWorkouts/loadExercises walk the
@@ -197,7 +233,7 @@ function upsertWorkout(workout) {
 // A template is a reusable plan: a name + a list of {exerciseId, targetSets,
 // targetReps}. No weight/reps logged here — that only exists once you
 // actually start a workout from a template, which copies its stations into
-// a live Workout (see startWorkoutFromTemplate in workout.js).
+// a live workout (see launchWorkout in workouts.js).
 function loadTemplates() {
   const raw = localStorage.getItem(STORAGE_KEYS.templates);
   if (!raw) return [];

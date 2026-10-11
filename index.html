@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Workout</title>
+  <title>Workouts</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,24 +11,99 @@
 </head>
 <body>
   <main>
-    <div id="workout-root"></div>
+    <div class="toggle-group" id="mode-toggle" style="margin-top:20px;">
+      <button data-value="exercises" class="active">Exercises</button>
+      <button data-value="templates">Templates</button>
+    </div>
 
-    <section class="templates-section">
-      <div class="templates-header">
-        <h2>Templates</h2>
-        <button class="icon-btn" id="new-template-btn" aria-label="New template">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 5v14M5 12h14"/>
-          </svg>
-        </button>
-      </div>
-      <div id="templates-root"></div>
-    </section>
+    <div class="search-filter-row">
+      <input type="text" id="search-input" placeholder="Search…">
+      <button class="btn-ghost filter-btn" id="filter-btn">Filter</button>
+      <button class="btn-ghost" id="new-template-btn" style="display:none; white-space:nowrap;">New template</button>
+    </div>
+
+    <div class="panel" style="margin-top:16px;">
+      <div id="list-root"></div>
+    </div>
   </main>
 
-  <button class="fab" id="start-fab" aria-label="Start workout">+</button>
+  <button class="fab" id="main-fab" aria-label="New exercise">+</button>
 
-  <!-- Template editor — slides up from the bottom, full screen -->
+  <!-- Filter sheet (Exercises mode only) -->
+  <div class="sheet-overlay" id="filter-overlay"></div>
+  <div class="sheet" id="filter-sheet">
+    <div class="sheet-grabber"></div>
+    <div class="sheet-header">
+      <button class="sheet-cancel-btn" id="filter-close-btn">Close</button>
+      <h2 class="sheet-title">Filter</h2>
+      <span style="width:48px;"></span>
+    </div>
+    <div class="sheet-body">
+      <div class="field">
+        <label>Equipment type</label>
+        <div class="filter-chip-list" id="filter-equipment-chips"></div>
+      </div>
+      <div class="field">
+        <label>Body part</label>
+        <div class="filter-chip-list" id="filter-muscle-chips"></div>
+      </div>
+      <button class="btn btn-ghost" id="clear-filter-btn" style="margin-top:12px;">Clear filter</button>
+    </div>
+  </div>
+
+  <!-- New exercise sheet -->
+  <div class="sheet-overlay" id="exercise-overlay"></div>
+  <div class="sheet" id="exercise-sheet">
+    <div class="sheet-grabber"></div>
+    <div class="sheet-header">
+      <button class="sheet-cancel-btn" id="exercise-cancel-btn">Cancel</button>
+      <h2 class="sheet-title" id="exercise-sheet-title">New Exercise</h2>
+      <span style="width:48px;"></span>
+    </div>
+    <div class="sheet-body">
+      <form id="exercise-form">
+        <div class="field">
+          <label>Name</label>
+          <input name="name" required placeholder="e.g. Lat Pulldown">
+        </div>
+        <div class="field">
+          <label>Equipment type</label>
+          <select name="equipmentType" required>
+            <option value="dual_machine">Dual machine</option>
+            <option value="plate_loaded_red">Plate-loaded (red)</option>
+            <option value="plate_loaded_grey">Plate-loaded (grey)</option>
+            <option value="cable">Cable</option>
+            <option value="barbell">Barbell</option>
+            <option value="dumbbell">Dumbbell</option>
+            <option value="bodyweight">Bodyweight</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Primary muscles</label>
+          <select name="primaryMuscles" multiple size="5">
+            <option>biceps</option><option>triceps</option><option>deltoid</option>
+            <option>back</option><option>quads</option><option>hams</option>
+            <option>calves</option><option>core</option><option>chest</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Secondary muscles</label>
+          <select name="secondaryMuscles" multiple size="5">
+            <option>biceps</option><option>triceps</option><option>deltoid</option>
+            <option>back</option><option>quads</option><option>hams</option>
+            <option>calves</option><option>core</option><option>chest</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Notes (form cues)</label>
+          <input name="notes" placeholder="optional">
+        </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Template editor sheet -->
   <div class="sheet-overlay" id="template-overlay"></div>
   <div class="sheet" id="template-sheet">
     <div class="sheet-grabber"></div>
@@ -42,22 +117,47 @@
         <label>Template name</label>
         <input id="template-name-input" placeholder="e.g. Upper A">
       </div>
-
       <div id="template-stations-root"></div>
-
       <div class="field">
         <label>Add exercise</label>
         <select id="template-add-exercise-select">
           <option value="">Choose exercise…</option>
         </select>
       </div>
-
       <button class="btn btn-danger" id="template-delete-btn" style="display:none; margin-top:20px;">Delete template</button>
     </div>
   </div>
 
+  <!-- Choose how to start a workout -->
+  <div class="sheet-overlay" id="new-workout-overlay"></div>
+  <div class="sheet" id="new-workout-sheet" role="dialog" aria-modal="true" aria-labelledby="new-workout-title">
+    <div class="sheet-grabber"></div>
+    <div class="sheet-header">
+      <button class="sheet-cancel-btn" id="new-workout-cancel-btn">Cancel</button>
+      <h2 class="sheet-title" id="new-workout-title">New Workout</h2>
+      <span style="width:48px;"></span>
+    </div>
+    <div class="sheet-body">
+      <p style="color:var(--text-dim); margin:0 0 18px;">How would you like to start?</p>
+      <button class="btn btn-primary" id="start-from-template-btn" style="width:100%; margin-bottom:12px;">Use a template</button>
+      <button class="btn btn-ghost" id="start-blank-workout-btn" style="width:100%;">Start a blank workout</button>
+    </div>
+  </div>
+
+  <!-- Pick a saved template for this workout -->
+  <div class="sheet-overlay" id="template-picker-overlay"></div>
+  <div class="sheet" id="template-picker-sheet" role="dialog" aria-modal="true" aria-labelledby="template-picker-title">
+    <div class="sheet-grabber"></div>
+    <div class="sheet-header">
+      <button class="sheet-cancel-btn" id="template-picker-back-btn">Back</button>
+      <h2 class="sheet-title" id="template-picker-title">Choose Template</h2>
+      <span style="width:48px;"></span>
+    </div>
+    <div class="sheet-body" id="template-picker-list"></div>
+  </div>
+
   <script src="js/data.js"></script>
   <script src="js/nav.js"></script>
-  <script src="js/workout.js"></script>
+  <script src="js/library-workouts.js"></script>
 </body>
 </html>

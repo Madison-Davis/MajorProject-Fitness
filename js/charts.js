@@ -19,9 +19,7 @@ const state = {
   chart3: { range: "week" },
 };
 
-function todayStr() {
-  return new Date().toISOString().slice(0, 10);
-}
+// todayStr() is defined once in data.js and reused everywhere.
 
 // ---- shared helpers ---------------------------------------------------------
 function setupCanvas(canvas) {

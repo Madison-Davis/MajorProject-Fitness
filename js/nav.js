@@ -5,17 +5,14 @@
 // every page stays visually identical by construction, not by copy-paste.
 // ============================================================================
 
+// Three sections now: Workouts (exercises + templates, merged), Logs (the
+// calendar / what-we-did history), Charts (progress). The old standalone
+// Exercises tab folded into Workouts as a toggle — see workouts.js.
 const TABS = [
   {
-    id: "workout",
+    id: "workouts",
     href: "index.html",
-    label: "Workout",
-    icon: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>',
-  },
-  {
-    id: "exercises",
-    href: "exercises.html",
-    label: "Exercises",
+    label: "Workouts",
     icon: '<path d="M6 7v10M18 7v10M3 12h18M9 9v6M15 9v6"/>',
   },
   {
@@ -39,9 +36,10 @@ const GEAR_ICON =
  * Renders the shared red topbar. Call once per page, before or after
  * renderNav() — order doesn't matter, one prepends and one appends.
  *
- * opts.leftLabel / opts.onLeftClick: optional left-side action (e.g. Logs'
- *   "Today" button). Omit both for pages with no left action — a hidden
- *   placeholder keeps the title centered either way.
+ * By default a hidden placeholder keeps the title centered (matches the
+ * gear's width on the right). Pass { noLeftSlot: true } to skip the
+ * placeholder entirely, which lets the title sit flush left instead —
+ * used by Logs, which has no left-side action anymore.
  * The right-side gear is always rendered but currently inert (disabled) —
  * there's no settings page yet to route it to.
  */
@@ -49,16 +47,12 @@ function renderTopbar(title, opts = {}) {
   const bar = document.createElement("div");
   bar.className = "topbar";
   bar.innerHTML = `
-    <button class="topbar-left-btn" ${opts.onLeftClick ? "" : "hidden"}>${opts.leftLabel || ""}</button>
+    ${opts.noLeftSlot ? "" : `<button class="topbar-left-btn" hidden></button>`}
     <h1 class="topbar-title">${title}</h1>
     <button class="icon-btn" aria-label="Settings" disabled>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">${GEAR_ICON}</svg>
     </button>`;
   document.body.insertBefore(bar, document.body.firstChild);
-
-  if (opts.onLeftClick) {
-    bar.querySelector(".topbar-left-btn").addEventListener("click", opts.onLeftClick);
-  }
 }
 
 function renderNav(activeId) {
