@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Exercises</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="page-header">
+    <h1>Exercises</h1>
+  </div>
+  <main>
+    <div id="exercises-root"></div>
+
+    <div id="exercise-form-wrap" style="display:none; margin-top:20px; border-top:1px solid var(--line); padding-top:20px;">
+      <h2 style="margin-bottom:12px;">New exercise</h2>
+      <form id="exercise-form" onsubmit="return handleAddExercise(event)">
+        <div class="field">
+          <label>Name</label>
+          <input name="name" required placeholder="e.g. Lat Pulldown">
+        </div>
+        <div class="field">
+          <label>Equipment type</label>
+          <select name="equipmentType" required>
+            <option value="dual_machine">Dual machine</option>
+            <option value="plate_loaded_red">Plate-loaded (red)</option>
+            <option value="plate_loaded_grey">Plate-loaded (grey)</option>
+            <option value="cable">Cable</option>
+            <option value="barbell">Barbell</option>
+            <option value="dumbbell">Dumbbell</option>
+            <option value="bodyweight">Bodyweight</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Primary muscles</label>
+          <select name="primaryMuscles" multiple size="5">
+            <option>biceps</option><option>triceps</option><option>deltoid</option>
+            <option>back</option><option>quads</option><option>hams</option>
+            <option>calves</option><option>core</option><option>chest</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Secondary muscles</label>
+          <select name="secondaryMuscles" multiple size="5">
+            <option>biceps</option><option>triceps</option><option>deltoid</option>
+            <option>back</option><option>quads</option><option>hams</option>
+            <option>calves</option><option>core</option><option>chest</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Notes (form cues)</label>
+          <input name="notes" placeholder="optional">
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button type="button" class="btn btn-ghost" onclick="closeForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <button class="fab" id="add-fab" aria-label="Add exercise">+</button>
+
+  <script src="js/data.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/exercises.js"></script>
+</body>
+</html>
