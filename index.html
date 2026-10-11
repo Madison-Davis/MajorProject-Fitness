@@ -12,9 +12,49 @@
 <body>
   <main>
     <div id="workout-root"></div>
+
+    <section class="templates-section">
+      <div class="templates-header">
+        <h2>Templates</h2>
+        <button class="icon-btn" id="new-template-btn" aria-label="New template">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+        </button>
+      </div>
+      <div id="templates-root"></div>
+    </section>
   </main>
 
   <button class="fab" id="start-fab" aria-label="Start workout">+</button>
+
+  <!-- Template editor — slides up from the bottom, full screen -->
+  <div class="sheet-overlay" id="template-overlay"></div>
+  <div class="sheet" id="template-sheet">
+    <div class="sheet-grabber"></div>
+    <div class="sheet-header">
+      <button class="sheet-cancel-btn" id="template-cancel-btn">Cancel</button>
+      <h2 class="sheet-title" id="template-sheet-title">New Template</h2>
+      <button class="sheet-save-btn" id="template-save-btn">Save</button>
+    </div>
+    <div class="sheet-body">
+      <div class="field">
+        <label>Template name</label>
+        <input id="template-name-input" placeholder="e.g. Upper A">
+      </div>
+
+      <div id="template-stations-root"></div>
+
+      <div class="field">
+        <label>Add exercise</label>
+        <select id="template-add-exercise-select">
+          <option value="">Choose exercise…</option>
+        </select>
+      </div>
+
+      <button class="btn btn-danger" id="template-delete-btn" style="display:none; margin-top:20px;">Delete template</button>
+    </div>
+  </div>
 
   <script src="js/data.js"></script>
   <script src="js/nav.js"></script>

@@ -10,6 +10,7 @@
 const STORAGE_KEYS = {
   exercises: "fitness_exercises",
   workouts: "fitness_workouts",
+  templates: "fitness_templates",
 };
 
 const SCHEMA_VERSION = 1;
@@ -190,6 +191,37 @@ function upsertWorkout(workout) {
   if (idx >= 0) workouts[idx] = workout;
   else workouts.push(workout);
   saveWorkouts(workouts);
+}
+
+// ---- templates --------------------------------------------------------
+// A template is a reusable plan: a name + a list of {exerciseId, targetSets,
+// targetReps}. No weight/reps logged here — that only exists once you
+// actually start a workout from a template, which copies its stations into
+// a live Workout (see startWorkoutFromTemplate in workout.js).
+function loadTemplates() {
+  const raw = localStorage.getItem(STORAGE_KEYS.templates);
+  if (!raw) return [];
+  const parsed = JSON.parse(raw);
+  return (parsed.templates || []).map(migrate);
+}
+
+function saveTemplates(templates) {
+  localStorage.setItem(
+    STORAGE_KEYS.templates,
+    JSON.stringify({ schemaVersion: SCHEMA_VERSION, templates })
+  );
+}
+
+function upsertTemplate(template) {
+  const templates = loadTemplates();
+  const idx = templates.findIndex((t) => t.id === template.id);
+  if (idx >= 0) templates[idx] = template;
+  else templates.push(template);
+  saveTemplates(templates);
+}
+
+function deleteTemplate(id) {
+  saveTemplates(loadTemplates().filter((t) => t.id !== id));
 }
 
 function upsertExercise(exercise) {
