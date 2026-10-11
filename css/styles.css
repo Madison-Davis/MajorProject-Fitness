@@ -15,10 +15,15 @@
   --text-dim: #8f8f94;
   --text-faint: #58585d;
 
-  --font-display: "Oswald", "Arial Narrow", sans-serif;
+  --font-display: "Oswald", sans-serif;
   --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
 
-  --radius: 4px;
+  /* Two radius scales: -sm for tappable controls (buttons, inputs, toggles),
+     -lg for "box" surfaces (cards, panels). -lg pairs with the corner-shape
+     declarations below to read as a continuous-curvature squircle rather
+     than a plain circular-arc rounded rect, on browsers that support it. */
+  --radius-sm: 10px;
+  --radius-lg: 22px;
   --nav-height: 64px;
   --topbar-height: 52px;
   --gap: 16px;
@@ -185,7 +190,8 @@ nav.tabbar a.active svg { stroke: var(--red); }
   gap: 8px;
   height: 48px;
   padding: 0 20px;
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
+  corner-shape: squircle; /* superellipse corner curvature; browsers that don't support it fall back to the circular-arc radius above, no breakage */
   font-size: 15px;
   font-weight: 600;
   width: 100%;
@@ -236,7 +242,8 @@ nav.tabbar a.active svg { stroke: var(--red); }
   height: 44px;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
+  corner-shape: squircle;
   padding: 0 12px;
   font-size: 15px;
 }
@@ -263,7 +270,8 @@ nav.tabbar a.active svg { stroke: var(--red); }
 .toggle-group {
   display: flex;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
+  corner-shape: squircle;
   overflow: hidden;
   margin-bottom: var(--gap);
 }
@@ -272,10 +280,55 @@ nav.tabbar a.active svg { stroke: var(--red); }
 .toggle-group button.active { background: var(--red-wash); color: var(--red); font-weight: 600; }
 
 /* ==========================================================================
-   Chart canvas container
+   Charts page — summary panel + bounded chart sections
    ========================================================================== */
-.chart-block { margin-bottom: 28px; }
-.chart-block canvas { width: 100%; height: 220px; display: block; }
+.summary-panel { padding-top: 20px; margin-bottom: 24px; }
+.summary-panel h2 { margin-bottom: 12px; }
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.summary-stat {
+  background: var(--surface);
+  padding: 18px 16px;
+  text-align: center;
+  border-radius: var(--radius-lg);
+  corner-shape: squircle;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.chart-box {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  corner-shape: squircle;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  padding: 18px;
+  margin-bottom: 20px;
+}
+
+.chart-box h2 { margin-bottom: 4px; }
+.chart-box .toggle-group { margin-top: 10px; }
+.chart-box canvas { width: 100%; height: 220px; display: block; }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 12px;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
 /* ==========================================================================
    Empty states
@@ -373,7 +426,9 @@ nav.tabbar a.active svg { stroke: var(--red); }
   margin: 0 auto;
   padding: 16px;
   background: var(--surface);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
+  corner-shape: squircle;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
   text-align: left;
 }
 
