@@ -131,6 +131,7 @@ function handleAddSet(evt, stationIdx) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+  renderTopbar("Workout");
   renderNav("workout");
   await ensureSeeded();
   render();

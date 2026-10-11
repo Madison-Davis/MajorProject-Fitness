@@ -80,6 +80,7 @@ function closeForm() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+  renderTopbar("Exercises");
   renderNav("exercises");
   await ensureSeeded();
   renderList();

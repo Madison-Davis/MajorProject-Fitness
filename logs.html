@@ -10,12 +10,29 @@
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="page-header">
-    <h1>Logs</h1>
-  </div>
   <main>
-    <div id="logs-root"></div>
+    <div class="calendar-card">
+      <div class="calendar-month-row">
+        <button class="calendar-nav-btn" id="prev-month" aria-label="Previous month">&#8249;</button>
+        <h2 class="calendar-month-label" id="month-label"></h2>
+        <button class="calendar-nav-btn" id="next-month" aria-label="Next month">&#8250;</button>
+      </div>
+
+      <div class="calendar-weekdays">
+        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+      </div>
+
+      <div class="calendar-grid" id="calendar-grid"></div>
+
+      <button class="calendar-collapse-btn" id="collapse-btn" aria-label="Toggle week view">
+        <span class="collapse-line"></span><span class="collapse-caret">&#9652;</span><span class="collapse-line"></span>
+      </button>
+    </div>
+
+    <div id="day-detail-root"></div>
   </main>
+
+  <button class="fab" id="add-log-fab" aria-label="Log a workout">+</button>
 
   <script src="js/data.js"></script>
   <script src="js/nav.js"></script>

@@ -32,15 +32,103 @@ function migrate(record) {
   return data;
 }
 
+// ---- fake data for UX building ---------------------------------------------
+// Dev-only reference data: one week, alternating Upper/Lower (matches your
+// usual split), 5-7 machines/session, weights nudging up across the week so
+// the progression chart has something to show. Flip USE_FAKE_SEED_DATA to
+// false (or delete this block + the two consts below) once you're working
+// with real logged data instead of UX reference data.
+const USE_FAKE_SEED_DATA = true;
+
+const FAKE_EXERCISES = {
+  schemaVersion: 1,
+  exercises: [
+    { id: "lat_pulldown", name: "Lat Pulldown", equipmentType: "dual_machine", primaryMuscles: ["back"], secondaryMuscles: ["biceps"], notes: "" },
+    { id: "chest_press", name: "Chest Press", equipmentType: "dual_machine", primaryMuscles: ["chest"], secondaryMuscles: ["triceps", "deltoid"], notes: "" },
+    { id: "shoulder_press", name: "Shoulder Press", equipmentType: "dual_machine", primaryMuscles: ["deltoid"], secondaryMuscles: ["triceps"], notes: "" },
+    { id: "bicep_curl", name: "Bicep Curl", equipmentType: "cable", primaryMuscles: ["biceps"], secondaryMuscles: [], notes: "" },
+    { id: "tricep_pushdown", name: "Tricep Pushdown", equipmentType: "cable", primaryMuscles: ["triceps"], secondaryMuscles: [], notes: "" },
+    { id: "seated_row", name: "Seated Row", equipmentType: "plate_loaded_red", primaryMuscles: ["back"], secondaryMuscles: ["biceps"], notes: "" },
+    { id: "leg_press", name: "Leg Press", equipmentType: "plate_loaded_grey", primaryMuscles: ["quads"], secondaryMuscles: ["hams"], notes: "" },
+    { id: "leg_extension", name: "Leg Extension", equipmentType: "dual_machine", primaryMuscles: ["quads"], secondaryMuscles: [], notes: "" },
+    { id: "leg_curl", name: "Leg Curl", equipmentType: "dual_machine", primaryMuscles: ["hams"], secondaryMuscles: ["calves"], notes: "" },
+    { id: "calf_raise", name: "Calf Raise", equipmentType: "plate_loaded_red", primaryMuscles: ["calves"], secondaryMuscles: [], notes: "" },
+    { id: "ab_crunch", name: "Ab Crunch", equipmentType: "dual_machine", primaryMuscles: ["core"], secondaryMuscles: [], notes: "" },
+  ],
+};
+
+const FAKE_WORKOUTS = {
+  schemaVersion: 1,
+  workouts: [
+    {
+      day: "2026-10-03", startTime: "18:00", endTime: "19:05",
+      stations: [
+        { exerciseId: "lat_pulldown", sets: [{ weight: 110, reps: 10 }, { weight: 110, reps: 9 }, { weight: 100, reps: 10 }] },
+        { exerciseId: "chest_press", sets: [{ weight: 95, reps: 10 }, { weight: 95, reps: 8 }, { weight: 85, reps: 10 }] },
+        { exerciseId: "shoulder_press", sets: [{ weight: 65, reps: 10 }, { weight: 65, reps: 9 }] },
+        { exerciseId: "bicep_curl", sets: [{ weight: 30, reps: 12 }, { weight: 30, reps: 10 }] },
+        { exerciseId: "tricep_pushdown", sets: [{ weight: 40, reps: 12 }, { weight: 40, reps: 11 }] },
+      ],
+    },
+    {
+      day: "2026-10-04", startTime: "17:45", endTime: "18:50",
+      stations: [
+        { exerciseId: "leg_press", sets: [{ weight: 260, reps: 12 }, { weight: 260, reps: 10 }, { weight: 240, reps: 12 }] },
+        { exerciseId: "leg_extension", sets: [{ weight: 90, reps: 12 }, { weight: 90, reps: 10 }] },
+        { exerciseId: "leg_curl", sets: [{ weight: 80, reps: 12 }, { weight: 80, reps: 10 }] },
+        { exerciseId: "calf_raise", sets: [{ weight: 150, reps: 15 }, { weight: 150, reps: 15 }] },
+        { exerciseId: "ab_crunch", sets: [{ weight: 60, reps: 15 }, { weight: 60, reps: 15 }] },
+      ],
+    },
+    {
+      day: "2026-10-06", startTime: "18:10", endTime: "19:15",
+      stations: [
+        { exerciseId: "lat_pulldown", sets: [{ weight: 115, reps: 10 }, { weight: 115, reps: 9 }, { weight: 105, reps: 10 }] },
+        { exerciseId: "seated_row", sets: [{ weight: 100, reps: 10 }, { weight: 100, reps: 9 }] },
+        { exerciseId: "chest_press", sets: [{ weight: 100, reps: 10 }, { weight: 100, reps: 8 }, { weight: 90, reps: 10 }] },
+        { exerciseId: "bicep_curl", sets: [{ weight: 32, reps: 11 }, { weight: 32, reps: 10 }] },
+        { exerciseId: "tricep_pushdown", sets: [{ weight: 42, reps: 12 }, { weight: 42, reps: 10 }] },
+      ],
+    },
+    {
+      day: "2026-10-07", startTime: "18:02", endTime: "19:10",
+      stations: [
+        { exerciseId: "leg_press", sets: [{ weight: 270, reps: 12 }, { weight: 270, reps: 10 }, { weight: 250, reps: 12 }] },
+        { exerciseId: "leg_extension", sets: [{ weight: 95, reps: 12 }, { weight: 95, reps: 10 }] },
+        { exerciseId: "leg_curl", sets: [{ weight: 85, reps: 11 }, { weight: 85, reps: 10 }] },
+        { exerciseId: "calf_raise", sets: [{ weight: 160, reps: 15 }, { weight: 160, reps: 14 }] },
+        { exerciseId: "ab_crunch", sets: [{ weight: 65, reps: 15 }, { weight: 65, reps: 15 }] },
+      ],
+    },
+    {
+      day: "2026-10-09", startTime: "17:50", endTime: "19:00",
+      stations: [
+        { exerciseId: "lat_pulldown", sets: [{ weight: 120, reps: 10 }, { weight: 120, reps: 9 }, { weight: 110, reps: 10 }] },
+        { exerciseId: "shoulder_press", sets: [{ weight: 70, reps: 10 }, { weight: 70, reps: 8 }] },
+        { exerciseId: "seated_row", sets: [{ weight: 105, reps: 10 }, { weight: 105, reps: 9 }] },
+        { exerciseId: "bicep_curl", sets: [{ weight: 32, reps: 12 }, { weight: 32, reps: 10 }] },
+        { exerciseId: "tricep_pushdown", sets: [{ weight: 45, reps: 12 }, { weight: 45, reps: 10 }] },
+      ],
+    },
+  ],
+};
+
 // ---- first-run seeding ------------------------------------------------------
 // localStorage starts empty on a fresh install. If there's nothing there yet,
-// pull the committed data/*.json files once and copy them in. After that,
-// localStorage is the live source and these files are only touched again by
+// either copy in the fake UX-reference data above, or (once you flip
+// USE_FAKE_SEED_DATA off) pull the committed data/*.json files instead. After
+// that, localStorage is the live source — these are only touched again by
 // your export/import (GitHub backup) flow.
 async function ensureSeeded() {
   const hasExercises = localStorage.getItem(STORAGE_KEYS.exercises) !== null;
   const hasWorkouts = localStorage.getItem(STORAGE_KEYS.workouts) !== null;
   if (hasExercises && hasWorkouts) return;
+
+  if (USE_FAKE_SEED_DATA) {
+    if (!hasExercises) localStorage.setItem(STORAGE_KEYS.exercises, JSON.stringify(FAKE_EXERCISES));
+    if (!hasWorkouts) localStorage.setItem(STORAGE_KEYS.workouts, JSON.stringify(FAKE_WORKOUTS));
+    return;
+  }
 
   try {
     if (!hasExercises) {

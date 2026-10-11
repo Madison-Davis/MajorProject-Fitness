@@ -1,10 +1,10 @@
 /* ==========================================================================
-   Design tokens
+   Design tokens — every color/size other rules build from. Change the look
+   of the whole app by editing values here, not by hunting through rules below.
    ========================================================================== */
 :root {
   --bg: #0b0b0c;
   --surface: #17171a;
-  --surface-raised: #202024;
   --line: #2a2a2e;
 
   --red: #e3342e;
@@ -20,18 +20,18 @@
 
   --radius: 4px;
   --nav-height: 64px;
+  --topbar-height: 52px;
   --gap: 16px;
 }
 
-@font-face {
-  font-family: "Oswald";
-  src: local("Oswald");
-}
-
 /* ==========================================================================
-   Reset
+   Base reset — browsers ship their own default margins, paddings and font
+   sizes for things like <h1>, <button> and <p>, and they don't agree with
+   each other. These rules zero that out once, here, so every component
+   below starts from the same blank slate instead of fighting inherited
+   browser defaults.
    ========================================================================== */
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }  /* consistent sizing + no surprise default spacing */
 
 html, body {
   height: 100%;
@@ -48,14 +48,8 @@ body {
   padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px));
 }
 
-button, input, select { font: inherit; color: inherit; }
-
-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
+button, input, select { font: inherit; color: inherit; }  /* form controls don't inherit font by default */
+button { background: none; border: none; cursor: pointer; }
 a { color: inherit; text-decoration: none; }
 
 /* ==========================================================================
@@ -67,19 +61,11 @@ h1, h2, h3, .num {
   letter-spacing: 0.01em;
 }
 
-h1 { font-size: 28px; line-height: 1.1; padding: 20px var(--gap) 12px; }
 h2 { font-size: 15px; color: var(--text-dim); font-weight: 500; letter-spacing: 0.02em; }
 h3 { font-size: 17px; }
 
-.num {
-  font-size: 22px;
-  font-variant-numeric: tabular-nums;
-}
-
-.num-lg {
-  font-size: 40px;
-  font-variant-numeric: tabular-nums;
-}
+.num { font-size: 22px; font-variant-numeric: tabular-nums; }
+.num-lg { font-size: 40px; font-variant-numeric: tabular-nums; }
 
 p, .body-text { font-size: 15px; color: var(--text-dim); line-height: 1.5; }
 
@@ -94,13 +80,54 @@ main {
   padding: 0 var(--gap) 24px;
 }
 
-.page-header {
+/* ==========================================================================
+   Topbar — ONE shared header, rendered by renderTopbar() in nav.js on every
+   page. Nothing below is page-specific; per-page differences (a left button,
+   its label, its click handler) are passed as arguments from each page's JS,
+   not hardcoded per page in HTML.
+   ========================================================================== */
+.topbar {
   position: sticky;
   top: 0;
-  background: var(--bg);
   z-index: 5;
-  border-bottom: 1px solid var(--line);
+  height: calc(var(--topbar-height) + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+  background: var(--red);
+  color: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: var(--gap);
+  padding-right: var(--gap);
 }
+
+.topbar-title {
+  font-size: 19px;
+  color: var(--bg);
+}
+
+.topbar-left-btn {
+  font-size: 16px;
+  color: var(--bg);
+  min-width: 48px;
+  text-align: left;
+}
+
+.topbar-left-btn[hidden] { visibility: hidden; } /* keeps title centered even with no left action */
+
+/* ==========================================================================
+   Icon buttons — one shared size/alignment rule for every button that's
+   just an SVG glyph (topbar gear, calendar prev/next, collapse caret).
+   ========================================================================== */
+.icon-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-btn svg { width: 22px; height: 22px; }
 
 /* ==========================================================================
    Bottom nav
@@ -129,7 +156,6 @@ nav.tabbar a {
 }
 
 nav.tabbar a svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; }
-
 nav.tabbar a.active { color: var(--red); }
 nav.tabbar a.active svg { stroke: var(--red); }
 
@@ -168,12 +194,7 @@ nav.tabbar a.active svg { stroke: var(--red); }
 .btn-primary { background: var(--red); color: var(--bg); }
 .btn-primary:active { background: var(--red-dim); }
 
-.btn-ghost {
-  background: transparent;
-  border: 1px solid var(--line);
-  color: var(--text);
-}
-
+.btn-ghost { background: transparent; border: 1px solid var(--line); color: var(--text); }
 .btn-danger { background: transparent; color: var(--red); }
 
 .fab {
@@ -190,6 +211,11 @@ nav.tabbar a.active svg { stroke: var(--red); }
   justify-content: center;
   box-shadow: 0 4px 16px rgba(227, 52, 46, 0.35);
   z-index: 8;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .fab { transition: transform 0.15s ease; }
+  .fab:active { transform: scale(0.92); }
 }
 
 /* ==========================================================================
@@ -216,12 +242,11 @@ nav.tabbar a.active svg { stroke: var(--red); }
 }
 
 .field input:focus, .field select:focus,
-.btn:focus-visible, nav.tabbar a:focus-visible {
+.btn:focus-visible, nav.tabbar a:focus-visible, .icon-btn:focus-visible {
   outline: 2px solid var(--red);
   outline-offset: 2px;
 }
 
-/* set row inputs — weight + reps side by side */
 .set-row {
   display: grid;
   grid-template-columns: 24px 1fr 1fr auto;
@@ -243,18 +268,8 @@ nav.tabbar a.active svg { stroke: var(--red); }
   margin-bottom: var(--gap);
 }
 
-.toggle-group button {
-  flex: 1;
-  height: 36px;
-  font-size: 13px;
-  color: var(--text-dim);
-}
-
-.toggle-group button.active {
-  background: var(--red-wash);
-  color: var(--red);
-  font-weight: 600;
-}
+.toggle-group button { flex: 1; height: 36px; font-size: 13px; color: var(--text-dim); }
+.toggle-group button.active { background: var(--red-wash); color: var(--red); font-weight: 600; }
 
 /* ==========================================================================
    Chart canvas container
@@ -265,15 +280,103 @@ nav.tabbar a.active svg { stroke: var(--red); }
 /* ==========================================================================
    Empty states
    ========================================================================== */
-.empty {
-  padding: 48px 0;
-  text-align: center;
-  color: var(--text-dim);
-}
-
+.empty { padding: 48px 0; text-align: center; color: var(--text-dim); }
 .empty .num-lg { color: var(--text-faint); display: block; margin-bottom: 8px; }
 
-@media (prefers-reduced-motion: no-preference) {
-  .fab { transition: transform 0.15s ease; }
-  .fab:active { transform: scale(0.92); }
+/* ==========================================================================
+   Logs — calendar view
+   ========================================================================== */
+.calendar-card { max-width: 480px; margin: 0 auto; padding: 18px var(--gap) 0; }
+
+.calendar-month-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin-bottom: 18px;
 }
+
+.calendar-nav-btn { font-size: 22px; color: var(--text-dim); width: 32px; height: 32px; }
+
+.calendar-month-label {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  min-width: 170px;
+  text-align: center;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 8px;
+}
+
+.calendar-weekdays span { text-align: center; font-size: 13px; color: var(--text-faint); }
+
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 14px; }
+
+.day-cell {
+  position: relative;
+  height: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+
+.day-num {
+  width: 36px; height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 17px;
+  color: var(--text);
+}
+
+.day-cell.has-workout .day-num { background: var(--red); color: var(--bg); font-weight: 600; }
+.day-cell.has-workout.is-today .day-num { background: var(--red-dim); color: var(--text); }
+.day-cell.is-selected .day-num { outline: 2px solid var(--text); outline-offset: 2px; }
+
+.day-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--red); margin-top: 2px; }
+
+.calendar-collapse-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 0 8px;
+  color: var(--text-faint);
+}
+
+.collapse-line { flex: 1; height: 1px; background: var(--line); }
+.collapse-caret { font-size: 14px; }
+
+.day-detail-heading {
+  padding: 20px var(--gap) 8px;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.workout-summary-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: calc(100% - 32px);
+  max-width: 448px;
+  margin: 0 auto;
+  padding: 16px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  text-align: left;
+}
+
+.workout-summary-card .chevron { width: 20px; height: 20px; flex-shrink: 0; color: var(--text-faint); }
+
+#summary-expanded { max-width: 480px; margin: 0 auto; padding: 0 var(--gap); }

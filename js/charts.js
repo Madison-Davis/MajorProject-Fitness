@@ -208,6 +208,7 @@ function populateExerciseSelect() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+  renderTopbar("Progress");
   renderNav("charts");
   await ensureSeeded();
   QL = buildQueryLayer();
