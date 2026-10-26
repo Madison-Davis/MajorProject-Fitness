@@ -16,7 +16,7 @@ const EQUIPMENT_TYPES = [
   { value: "bodyweight", label: "Bodyweight" },
 ];
 
-const MUSCLES = ["biceps", "triceps", "deltoid", "back", "quads", "hams", "calves", "core", "chest"];
+const MUSCLES = ["biceps", "triceps", "deltoid", "back", "quads", "hams", "calves", "core", "chest", "glutes"];
 
 let selectedPrimary = [];
 let selectedSecondary = [];
