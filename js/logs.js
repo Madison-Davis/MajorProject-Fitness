@@ -3,8 +3,8 @@
 // ============================================================================
 
 const MUSCLE_SUPERGROUPS = {
-  upper: ["biceps", "triceps", "deltoid", "back"],
-  lower: ["quads", "hams", "calves", "core", "chest"],
+  upper: ["biceps", "triceps", "deltoid", "back", "chest",],
+  lower: ["quads", "hams", "calves", "core", "glutes"],
 };
 
 const CHEVRON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>`;
