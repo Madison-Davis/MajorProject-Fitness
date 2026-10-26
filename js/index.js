@@ -71,6 +71,34 @@ const EQUIPMENT_TYPES = [
 
 const MUSCLES = ["biceps", "triceps", "deltoid", "back", "quads", "hams", "calves", "core", "chest"];
 
+let selectedPrimary = [];
+let selectedSecondary = [];
+
+function renderMuscleRows(containerId, selected = []) {
+  document.getElementById(containerId).innerHTML = MUSCLES.map(m => `
+    <div class="row" data-muscle="${m}">
+      <div class="row-title">${m[0].toUpperCase() + m.slice(1)}</div>
+      <div class="settings-toggle ${selected.includes(m) ? 'active' : ''}"></div>
+    </div>`).join("");
+}
+
+function wireMuscleToggle(containerId, selectedArr) {
+  document.getElementById(containerId).addEventListener("click", (e) => {
+    const row = e.target.closest(".row");
+    if (!row) return;
+    const muscle = row.dataset.muscle;
+    const dot = row.querySelector(".settings-toggle");
+    const idx = selectedArr.indexOf(muscle);
+    if (idx === -1) {
+      selectedArr.push(muscle);
+      dot.classList.add("active");
+    } else {
+      selectedArr.splice(idx, 1);
+      dot.classList.remove("active");
+    }
+  });
+}
+
 const state = {
   mode: "exercises", // "exercises" | "templates"
   search: "",
@@ -107,6 +135,7 @@ function emptyStateHtml(message) {
 
 // ---- Exercises --------------------------------------------------------
 const CHEVRON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>`;
+const TRASH_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6h16Z"/></svg>`;
 
 function exerciseRowHtml(e) {
   return `
@@ -115,6 +144,7 @@ function exerciseRowHtml(e) {
         <div class="row-title">${e.name}</div>
         <div class="row-sub">${equipmentLabel(e.equipmentType)} · ${[...(e.primaryMuscles || []), ...(e.secondaryMuscles || [])].join(", ")}</div>
       </div>
+      <button class="icon-btn" onclick="deleteExerciseFromList('${e.id}', '${e.name.replace(/'/g, "\\'")}')" aria-label="Delete ${e.name}" style="color:var(--text-faint);">${TRASH_SVG}</button>
       <button class="icon-btn" onclick="openExerciseSheet('${e.id}')" aria-label="Edit ${e.name}">${CHEVRON_SVG}</button>
     </div>`;
 }
@@ -210,11 +240,14 @@ function openExerciseSheet(id) {
 
   document.getElementById("exercise-sheet-title").textContent = existing ? "Edit Exercise" : "New Exercise";
 
+  selectedPrimary = existing ? [...(existing.primaryMuscles || [])] : [];
+  selectedSecondary = existing ? [...(existing.secondaryMuscles || [])] : [];
+  renderMuscleRows("primary-muscle-rows", selectedPrimary);
+  renderMuscleRows("secondary-muscle-rows", selectedSecondary);
+
   if (existing) {
     form.name.value = existing.name;
     form.equipmentType.value = existing.equipmentType;
-    [...form.primaryMuscles.options].forEach((o) => (o.selected = (existing.primaryMuscles || []).includes(o.value)));
-    [...form.secondaryMuscles.options].forEach((o) => (o.selected = (existing.secondaryMuscles || []).includes(o.value)));
     form.notes.value = existing.notes || "";
   }
 
@@ -237,14 +270,20 @@ function handleSaveExercise(evt) {
     id: editingExerciseId || slugify(name), // editing keeps its original id even if the name changes
     name,
     equipmentType: form.equipmentType.value,
-    primaryMuscles: [...form.primaryMuscles.selectedOptions].map((o) => o.value),
-    secondaryMuscles: [...form.secondaryMuscles.selectedOptions].map((o) => o.value),
+    primaryMuscles: [...selectedPrimary],
+    secondaryMuscles: [...selectedSecondary],
     notes: form.notes.value.trim(),
   });
 
   closeExerciseSheet();
   renderList();
   return false;
+}
+
+function deleteExerciseFromList(id, name) {
+  if (!confirm(`Delete "${name}"? This can't be undone.`)) return;
+  deleteExercise(id);
+  renderList();
 }
 
 // ---- Templates ------------------------------------------------------------
@@ -374,6 +413,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   await ensureSeeded();
 
   renderList();
+
+  document.getElementById("exercise-form").addEventListener("submit", handleSaveExercise);
+  wireMuscleToggle("primary-muscle-rows", selectedPrimary);
+  wireMuscleToggle("secondary-muscle-rows", selectedSecondary);
 
   document.getElementById("mode-toggle").querySelectorAll("button").forEach((btn) => {
     btn.addEventListener("click", () => {

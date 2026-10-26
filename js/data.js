@@ -268,6 +268,18 @@ function upsertExercise(exercise) {
   saveExercises(exercises);
 }
 
+function upsertExercise(exercise) {
+  const exercises = loadExercises();
+  const idx = exercises.findIndex((e) => e.id === exercise.id);
+  if (idx >= 0) exercises[idx] = exercise;
+  else exercises.push(exercise);
+  saveExercises(exercises);
+}
+
+function deleteExercise(id) {
+  saveExercises(loadExercises().filter((e) => e.id !== id));
+}
+
 // ---- flatten + indexes -----------------------------------------------------
 function isoWeek(dateStr) {
   const d = new Date(dateStr + "T00:00:00");

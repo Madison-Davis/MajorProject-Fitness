@@ -16,7 +16,7 @@ const ASSETS = [
   "js/nav.js",
   "js/active-workouts.js",
   "js/library-exercises.js",
-  "js/library-workouts.js",
+  "js/index.js",
   "js/logs.js",
   "js/charts.js",
   "manifest.json",

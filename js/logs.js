@@ -7,6 +7,9 @@ const MUSCLE_SUPERGROUPS = {
   lower: ["quads", "hams", "calves", "core", "chest"],
 };
 
+const CHEVRON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>`;
+const TRASH_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6h16Z"/></svg>`;
+
 let calState = {
   year: new Date().getFullYear(),
   month: new Date().getMonth(), // 0-indexed
@@ -85,7 +88,7 @@ function renderCalendarGrid() {
 
   const rows = [];
   for (let r = 0; r < cells.length; r += 7) rows.push(cells.slice(r, r + 7));
-
+  
   // when collapsed, show only the row containing the selected day
   const visibleRows = calState.collapsed
     ? rows.filter((row) =>
@@ -138,6 +141,7 @@ function formatSelectedDayHeading(dStr) {
   return `${names[m - 1]} ${d}, ${y}`;
 }
 
+
 function renderDayDetail() {
   const root = document.getElementById("day-detail-root");
   const dStr = calState.selectedDay;
@@ -146,7 +150,10 @@ function renderDayDetail() {
   if (!workout) {
     root.innerHTML = `
       <div class="day-detail-heading">${formatSelectedDayHeading(dStr)}</div>
-      <div class="empty"><span class="num-lg">—</span><p>No workout logged this day.</p></div>`;
+      <div class="empty">
+        <span class="num-lg">—</span>
+        <p>No workout logged this day.</p>
+      </div>`;
     return;
   }
 
@@ -155,35 +162,83 @@ function renderDayDetail() {
 
   root.innerHTML = `
     <div class="day-detail-heading">${formatSelectedDayHeading(dStr)}</div>
-    <button class="workout-summary-card" id="summary-toggle">
+
+    <div class="workout-summary-card">
       <div>
         <div class="row-title">${workoutLabel(workout)}</div>
-        <div class="row-sub">Completed ${workout.stations.length} exercise${workout.stations.length === 1 ? "" : "s"}${
-          duration != null ? ` in ${duration} minutes` : ""
-        }</div>
+        <div class="row-sub">
+          Completed ${workout.stations.length} exercise${workout.stations.length === 1 ? "" : "s"}${duration != null ? ` in ${duration} minutes` : ""}
+        </div>
         <div class="row-sub">Training Volume: ${volume.toLocaleString()}</div>
       </div>
-      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M9 6l6 6-6 6"/>
-      </svg>
-    </button>
-    <div id="summary-expanded" style="display:none;" class="row-sub">
-      ${workout.stations
-        .map(
-          (s) => `
-        <div style="margin:10px 4px;">
-          <strong style="color:var(--text);">${exById.get(s.exerciseId)?.name || s.exerciseId}</strong><br>
-          ${s.sets.map((set) => `${set.weight ?? "BW"}&times;${set.reps}`).join("  ")}
-        </div>`
-        )
-        .join("")}
+      <div style="display:flex; gap:4px; flex-shrink:0;">
+        <button class="icon-btn" id="delete-workout-btn" aria-label="Delete workout" style="color:var(--text-faint);">${TRASH_SVG}</button>
+        <button class="icon-btn chevron" id="edit-workout-btn" aria-label="Edit workout">${CHEVRON_SVG}</button>
+      </div>
     </div>`;
 
-  document.getElementById("summary-toggle").addEventListener("click", () => {
-    const expanded = document.getElementById("summary-expanded");
-    expanded.style.display = expanded.style.display === "none" ? "block" : "none";
-  });
-}
+    // View toggles a read-only set table for that exercise.
+    root.querySelectorAll('[data-action="view"]').forEach((button) => {
+      button.addEventListener("click", () => {
+        const details = document.getElementById(`exercise-details-${button.dataset.index}`);
+        details.hidden = !details.hidden;
+        button.textContent = details.hidden ? "View" : "Hide";
+      });
+    });
+
+    // Edit opens the existing editor for the full workout.
+    root.querySelectorAll('[data-action="edit"]').forEach((button) => {
+      button.addEventListener("click", () => {
+        const currentWorkout = getWorkoutByDay(dStr);
+        if (!currentWorkout) return;
+        setActiveWorkout(structuredClone(currentWorkout));
+        window.location.href = "active-workouts.html";
+      });
+    });
+
+    // Delete removes only the selected exercise from this workout.
+    root.querySelectorAll('[data-action="delete"]').forEach((button) => {
+      button.addEventListener("click", () => {
+        const index = Number(button.dataset.index);
+        const currentWorkout = getWorkoutByDay(dStr);
+        if (!currentWorkout) return;
+
+        const name = exById.get(currentWorkout.stations[index]?.exerciseId)?.name
+          || currentWorkout.stations[index]?.exerciseId
+          || "this exercise";
+
+        if (!confirm(`Delete ${name} from this workout? This cannot be undone.`)) return;
+
+        currentWorkout.stations.splice(index, 1);
+
+        const remainingWorkouts = loadWorkouts().filter((w) => w.day !== dStr);
+        if (currentWorkout.stations.length > 0) {
+          remainingWorkouts.push(currentWorkout);
+        }
+
+        saveWorkouts(remainingWorkouts);
+        loadWorkoutsByDay();
+        renderCalendar();
+        renderDayDetail();
+      });
+    });
+
+    document.getElementById("delete-workout-btn").addEventListener("click", () => {
+      if (!confirm("Delete this entire workout? This cannot be undone.")) return;
+      saveWorkouts(loadWorkouts().filter((w) => w.day !== dStr));
+      loadWorkoutsByDay();
+      renderCalendar();
+      renderDayDetail();
+    });
+
+    document.getElementById("edit-workout-btn").addEventListener("click", () => {
+      const currentWorkout = getWorkoutByDay(dStr);
+      if (!currentWorkout) return;
+      setActiveWorkout(structuredClone(currentWorkout));
+      window.location.href = "active-workouts.html";
+    });
+  }
+
 
 // ---- wiring -------------------------------------------------------------
 function loadWorkoutsByDay() {

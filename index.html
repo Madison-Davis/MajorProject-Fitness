@@ -79,21 +79,13 @@
             <option value="bodyweight">Bodyweight</option>
           </select>
         </div>
-        <div class="field">
-          <label>Primary muscles</label>
-          <select name="primaryMuscles" multiple size="5">
-            <option>biceps</option><option>triceps</option><option>deltoid</option>
-            <option>back</option><option>quads</option><option>hams</option>
-            <option>calves</option><option>core</option><option>chest</option>
-          </select>
+        <div class="settings-group">
+          <div class="settings-group-label">Primary muscles</div>
+          <div class="row-list" id="primary-muscle-rows"></div>
         </div>
-        <div class="field">
-          <label>Secondary muscles</label>
-          <select name="secondaryMuscles" multiple size="5">
-            <option>biceps</option><option>triceps</option><option>deltoid</option>
-            <option>back</option><option>quads</option><option>hams</option>
-            <option>calves</option><option>core</option><option>chest</option>
-          </select>
+        <div class="settings-group">
+          <div class="settings-group-label">Secondary muscles</div>
+          <div class="row-list" id="secondary-muscle-rows"></div>
         </div>
         <div class="field">
           <label>Notes (form cues)</label>
@@ -159,6 +151,6 @@
 
   <script src="js/data.js"></script>
   <script src="js/nav.js"></script>
-  <script src="js/library-workouts.js"></script>
+  <script src="js/index.js"></script>
 </body>
 </html>
