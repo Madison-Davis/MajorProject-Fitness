@@ -34,6 +34,34 @@
 
   <button class="fab" id="add-log-fab" aria-label="Start new workout">+</button>
 
+  <!-- Choose how to start a workout -->
+  <div class="sheet-overlay" id="new-workout-overlay"></div>
+  <div class="sheet" id="new-workout-sheet" role="dialog" aria-modal="true" aria-labelledby="new-workout-title">
+    <div class="sheet-grabber"></div>
+    <div class="sheet-header">
+      <button class="sheet-cancel-btn" id="new-workout-cancel-btn">Cancel</button>
+      <h2 class="sheet-title" id="new-workout-title">New Workout</h2>
+      <span style="width:48px;"></span>
+    </div>
+    <div class="sheet-body">
+      <p style="color:var(--text-dim); margin:0 0 18px;">How would you like to start?</p>
+      <button class="btn btn-primary" id="start-from-template-btn" style="width:100%; margin-bottom:12px;">Use a template</button>
+      <button class="btn btn-ghost" id="start-blank-workout-btn" style="width:100%;">Start a blank workout</button>
+    </div>
+  </div>
+
+  <!-- Pick a saved template for this workout -->
+  <div class="sheet-overlay" id="template-picker-overlay"></div>
+  <div class="sheet" id="template-picker-sheet" role="dialog" aria-modal="true" aria-labelledby="template-picker-title">
+    <div class="sheet-grabber"></div>
+    <div class="sheet-header">
+      <button class="sheet-cancel-btn" id="template-picker-back-btn">Back</button>
+      <h2 class="sheet-title" id="template-picker-title">Choose Template</h2>
+      <span style="width:48px;"></span>
+    </div>
+    <div class="sheet-body" id="template-picker-list"></div>
+  </div>
+
   <script src="js/data.js"></script>
   <script src="js/nav.js"></script>
   <script src="js/logs.js"></script>

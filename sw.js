@@ -2,7 +2,7 @@
 // notice sw.js changed, install the new worker, and purge the old cache —
 // without a bump, edits to any cached file (html/css/js) go on being served
 // stale forever, even after you save new versions.
-const CACHE_NAME = "fitness-app-v5";
+const CACHE_NAME = "fitness-app-v6";
 
 const ASSETS = [
   "./",

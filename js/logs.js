@@ -273,11 +273,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderCalendar();
   });
 
-  // Start a blank session and open its dedicated page.
+    // Resume an in-progress workout directly; otherwise offer template vs. blank.
   document.getElementById("add-log-fab").addEventListener("click", () => {
-    if (!getActiveWorkout()) startBlankWorkout();
-    window.location.href = "active-workouts.html";
+    if (getActiveWorkout()) {
+      window.location.href = "active-workouts.html";
+      return;
+    }
+    openNewWorkoutChoice();
   });
+
+  document.getElementById("new-workout-cancel-btn").addEventListener("click", closeNewWorkoutChoice);
+  document.getElementById("new-workout-overlay").addEventListener("click", closeNewWorkoutChoice);
+  document.getElementById("start-from-template-btn").addEventListener("click", openTemplatePicker);
+  document.getElementById("start-blank-workout-btn").addEventListener("click", startBlankWorkoutFromChoice);
+  document.getElementById("template-picker-back-btn").addEventListener("click", () => {
+    closeTemplatePicker();
+    openNewWorkoutChoice();
+  });
+  document.getElementById("template-picker-overlay").addEventListener("click", closeTemplatePicker);
 });
 
 

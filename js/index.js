@@ -6,59 +6,6 @@
 // Templates mode. Templates can also be created with the separate button.
 // ============================================================================
 
-
-function launchWorkout(templateId) {
-  const template = loadTemplates().find((item) => item.id === templateId);
-  if (!template) return;
-  setActiveWorkout({
-    day: todayStr(),
-    startTime: nowTime(),
-    endTime: null,
-    stations: template.stations.map((station) => ({ exerciseId: station.exerciseId, sets: [] })),
-  });
-  window.location.href = "active-workouts.html";
-}
-
-function startBlankWorkoutFromChoice() {
-  startBlankWorkout();
-  window.location.href = "active-workouts.html";
-}
-
-function openNewWorkoutChoice() {
-  document.getElementById("new-workout-overlay").classList.add("open");
-  document.getElementById("new-workout-sheet").classList.add("open");
-}
-
-function closeNewWorkoutChoice() {
-  document.getElementById("new-workout-overlay").classList.remove("open");
-  document.getElementById("new-workout-sheet").classList.remove("open");
-}
-
-function openTemplatePicker() {
-  closeNewWorkoutChoice();
-  const root = document.getElementById("template-picker-list");
-  const templates = loadTemplates();
-  if (!templates.length) {
-    root.innerHTML = `${emptyStateHtml("No templates yet. Create one first, or start a blank workout.")}<button class="btn btn-ghost" id="picker-blank-btn" style="width:100%; margin-top:12px;">Start a blank workout</button>`;
-    document.getElementById("picker-blank-btn").addEventListener("click", startBlankWorkoutFromChoice);
-  } else {
-    root.innerHTML = `<div class="row-list">${templates.map((template) => `
-      <button class="row" style="width:100%; text-align:left;" data-template-id="${template.id}">
-        <span style="flex:1;"><span class="row-title">${template.name}</span><span class="row-sub">${template.stations.length} exercises</span></span>
-      </button>`).join("")}</div>`;
-    root.querySelectorAll("[data-template-id]").forEach((button) => {
-      button.addEventListener("click", () => launchWorkout(button.dataset.templateId));
-    });
-  }
-  document.getElementById("template-picker-overlay").classList.add("open");
-  document.getElementById("template-picker-sheet").classList.add("open");
-}
-
-function closeTemplatePicker() {
-  document.getElementById("template-picker-overlay").classList.remove("open");
-  document.getElementById("template-picker-sheet").classList.remove("open");
-}
-
 const EQUIPMENT_TYPES = [
   { value: "dual_machine", label: "Dual machine" },
   { value: "plate_loaded_red", label: "Plate-loaded (red)" },
@@ -310,6 +257,7 @@ function renderTemplatesList() {
         <div class="row-title">${t.name}</div>
         <div class="row-sub">${t.stations.map((s) => exById.get(s.exerciseId)?.name || s.exerciseId).join(", ")}</div>
       </button>
+      <button class="icon-btn" onclick="deleteTemplateFromList('${t.id}', '${t.name.replace(/'/g, "\\'")}')" aria-label="Delete ${t.name}" style="color:var(--text-faint);">${TRASH_SVG}</button>
       <button class="icon-btn" onclick="openTemplateSheet('${t.id}')" aria-label="Edit ${t.name}">${CHEVRON_SVG}</button>
     </div>`
     )
@@ -394,6 +342,12 @@ function saveTemplate() {
 function deleteTemplateFromSheet() {
   if (editingTemplateId) deleteTemplate(editingTemplateId);
   closeTemplateSheet();
+  renderList();
+}
+
+function deleteTemplateFromList(id, name) {
+  if (!confirm(`Delete "${name}"? This can't be undone.`)) return;
+  deleteTemplate(id);
   renderList();
 }
 

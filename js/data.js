@@ -51,6 +51,62 @@ function startBlankWorkout() {
   setActiveWorkout({ day: todayStr(), startTime: nowTime(), endTime: null, stations: [] });
 }
 
+function emptyStateHtml(message) {
+  return `<div class="empty"><span class="num-lg">—</span><p>${message}</p></div>`;
+}
+
+function launchWorkout(templateId) {
+  const template = loadTemplates().find((item) => item.id === templateId);
+  if (!template) return;
+  setActiveWorkout({
+    day: todayStr(),
+    startTime: nowTime(),
+    endTime: null,
+    stations: template.stations.map((station) => ({ exerciseId: station.exerciseId, sets: [] })),
+  });
+  window.location.href = "active-workouts.html";
+}
+
+function startBlankWorkoutFromChoice() {
+  startBlankWorkout();
+  window.location.href = "active-workouts.html";
+}
+
+function openNewWorkoutChoice() {
+  document.getElementById("new-workout-overlay").classList.add("open");
+  document.getElementById("new-workout-sheet").classList.add("open");
+}
+
+function closeNewWorkoutChoice() {
+  document.getElementById("new-workout-overlay").classList.remove("open");
+  document.getElementById("new-workout-sheet").classList.remove("open");
+}
+
+function openTemplatePicker() {
+  closeNewWorkoutChoice();
+  const root = document.getElementById("template-picker-list");
+  const templates = loadTemplates();
+  if (!templates.length) {
+    root.innerHTML = `${emptyStateHtml("No templates yet. Create one first, or start a blank workout.")}<button class="btn btn-ghost" id="picker-blank-btn" style="width:100%; margin-top:12px;">Start a blank workout</button>`;
+    document.getElementById("picker-blank-btn").addEventListener("click", startBlankWorkoutFromChoice);
+  } else {
+    root.innerHTML = `<div class="row-list">${templates.map((template) => `
+      <button class="row" style="width:100%; text-align:left;" data-template-id="${template.id}">
+        <span style="flex:1;"><span class="row-title">${template.name}</span><span class="row-sub">${template.stations.length} exercises</span></span>
+      </button>`).join("")}</div>`;
+    root.querySelectorAll("[data-template-id]").forEach((button) => {
+      button.addEventListener("click", () => launchWorkout(button.dataset.templateId));
+    });
+  }
+  document.getElementById("template-picker-overlay").classList.add("open");
+  document.getElementById("template-picker-sheet").classList.add("open");
+}
+
+function closeTemplatePicker() {
+  document.getElementById("template-picker-overlay").classList.remove("open");
+  document.getElementById("template-picker-sheet").classList.remove("open");
+}
+
 // ---- migrations -----------------------------------------------------------
 // Add an entry here whenever SCHEMA_VERSION bumps. Each fn takes the old
 // shape and returns the next version up; loadWorkouts/loadExercises walk the
